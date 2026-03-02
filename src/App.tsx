@@ -12,7 +12,7 @@ import "./App.css";
 import { Toaster } from "./components/refine-ui/notification/toaster";
 import { useNotificationProvider } from "./components/refine-ui/notification/use-notification-provider";
 import { ThemeProvider } from "./components/refine-ui/theme/theme-provider";
-import { dataProvider } from "./providers/data";
+import { dataProvider } from "./providers/data.ts";
 import { Dashboard } from "./pages/dashboard";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { SubjectsList } from "./pages/subjects/list";
@@ -39,7 +39,7 @@ function App() {
                   list: "/",
                   meta: {
                     label: "Home",
-                    icon: <Home/>
+                    icon: <Home />
                   },
                 },
                 {
@@ -64,7 +64,7 @@ function App() {
                   <Route index element={<Dashboard />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="subjects">
-                    <Route index element={<SubjectsList />} />
+                    <Route index element={<SubjectsList />} /> 
                     <Route path="create" element={<SubjectsCreate />} />
                   </Route>
                 </Route>
