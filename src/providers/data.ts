@@ -1,55 +1,103 @@
-import {
-  BaseRecord,
-  DataProvider,
-  GetListParams,
-  GetListResponse,
-} from "@refinedev/core";
-import { Subject } from "@/types";
+import { createDataProvider, CreateDataProviderOptions } from "@refinedev/rest";
 
-const MOCK_SUBJECTS: Subject[] = [
-  {
-    id: 1,
-    code: "CSE101",
-    name: "Introduction to Computer Science",
-    department: "Computer Science",
-    description: "Foundational concepts in programming, algorithms, and computing systems.",
-    created_at: "2026-03-02T00:00:00.000Z",
-  },
-  {
-    id: 2,
-    code: "EEE210",
-    name: "Circuit Analysis",
-    department: "Electrical Engineering",
-    description: "Principles of DC/AC circuits, network theorems, and practical analysis methods.",
-    created_at: "2026-03-02T00:00:00.000Z",
-  },
-  {
-    id: 3,
-    code: "MEC230",
-    name: "Thermodynamics",
-    department: "Mechanical Engineering",
-    description: "Study of energy, heat transfer, and laws governing thermodynamic systems.",
-    created_at: "2026-03-02T00:00:00.000Z",
-  },
-];
+type ListResponse<T = unknown> = {
+  data?: T[];
+  pagination?: {
+    total: number;
+  };
+};
 
-export const dataProvider: DataProvider = {
-  getList: async <TData extends BaseRecord = BaseRecord>({
-    resource,
-  }: GetListParams): Promise<GetListResponse<TData>> => {
-      if(resource !== "subjects") {
-        return { data: [] as TData[], total: 0 };
+type CreateResponse<T = unknown> = {
+  data?: T;
+};
+
+type GetOneResponse<T = unknown> = {
+  data?: T;
+};
+
+const BACKEND_BASE_URL =
+  import.meta.env.VITE_BACKEND_BASE_URL ?? "http://localhost:4000";
+
+const options: CreateDataProviderOptions = {
+  getList: {
+    getEndpoint: ({ resource }) => `api/${resource}`,
+
+    buildQueryParams: async ({ resource, pagination, filters }) => {
+      const params: Record<string, string | number> = {};
+
+      if (pagination?.mode !== "off") {
+        const page = pagination?.currentPage ?? 1;
+        const pageSize = pagination?.pageSize ?? 10;
+
+        params.page = page;
+        params.limit = pageSize;
       }
 
-      return {
-        data: MOCK_SUBJECTS as unknown as TData[],
-        total: MOCK_SUBJECTS.length,
-      };
-    },
-    getOne: async () => {throw new Error('This function is not implemented')},
-    create: async () => {throw new Error('This function is not implemented')},
-    update: async () => {throw new Error('This function is not implemented')},
-    deleteOne: async () => {throw new Error('This function is not implemented')},
+      filters?.forEach((filter) => {
+        const field = "field" in filter ? filter.field : "";
+        const value = String(filter.value);
 
-    getApiUrl:() => "",
-}
+        if (field === "role") {
+          params.role = value;
+        }
+
+        if (resource === "departments") {
+          if (field === "name" || field === "code") params.search = value;
+        }
+
+        if (resource === "users") {
+          if (field === "search" || field === "name" || field === "email") {
+            params.search = value;
+          }
+        }
+
+        if (resource === "subjects") {
+          if (field === "department") params.department = value;
+          if (field === "name" || field === "code") params.search = value;
+        }
+
+        if (resource === "classes") {
+          if (field === "name") params.search = value;
+          if (field === "subject") params.subject = value;
+          if (field === "teacher") params.teacher = value;
+        }
+      });
+
+      return params;
+    },
+
+    mapResponse: async (response) => {
+      const payload: ListResponse = await response.json();
+      return payload.data ?? [];
+    },
+
+    getTotalCount: async (response) => {
+      const payload: ListResponse = await response.clone().json();
+      return payload.pagination?.total ?? payload.data?.length ?? 0;
+    },
+  },
+
+  create: {
+    getEndpoint: ({ resource }) => `api/${resource}`,
+
+    buildBodyParams: async ({ variables }) => variables,
+
+    mapResponse: async (response) => {
+      const json: CreateResponse = await response.json();
+      return json.data ?? {};
+    },
+  },
+
+  getOne: {
+    getEndpoint: ({ resource, id }) => `api/${resource}/${id}`,
+
+    mapResponse: async (response) => {
+      const json: GetOneResponse = await response.json();
+      return json.data ?? {};
+    },
+  },
+};
+
+const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options);
+
+export { dataProvider };
