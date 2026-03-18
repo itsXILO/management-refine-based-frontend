@@ -12,6 +12,7 @@ import { Subject } from "@/types/index.ts";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge.tsx";
+import { useEffect } from "react";
 
 
 export function SubjectsList() {
@@ -84,12 +85,16 @@ export function SubjectsList() {
     }
   });
 
+  useEffect(() => {
+    subjectTable.refineCore.setCurrentPage(1);
+  }, [searchQuery, selectedDepartment, subjectTable.refineCore]);
+
   return (
     <ListView>
       <Breadcrumb />
       <h1 className="page-title">Subjects</h1>
       <div className="intro-row">
-        <p>Quick access to essential metrics and management tools</p>
+        <p>Browse and manage all subjects in one place</p>
         <br />
         <div className="actions-row">
           <div className="relative w-full md:max-w-72">
