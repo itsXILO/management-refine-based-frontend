@@ -16,7 +16,9 @@ import { dataProvider } from "./providers/data.ts";
 import { Dashboard } from "./pages/dashboard";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { SubjectsList } from "./pages/subjects/list";
+import ClassesList from "./pages/classes/list";
 import { SubjectsCreate } from "./pages/subjects/create";
+import ClassesCreate from "./pages/classes/create";
 
 function App() {
   return (
@@ -35,10 +37,10 @@ function App() {
               }}
               resources={[
                 {
-                  name: "home",
+                  name: "dashboard",
                   list: "/",
                   meta: {
-                    label: "Home",
+                    label: "Dashboard",
                     icon: <Home />
                   },
                 },
@@ -50,6 +52,16 @@ function App() {
                     label: "Subjects",
                     icon: <BookOpen />
                   },
+                },
+                {
+                  name: "classes",
+                  list: "/classes",
+                  create: "/classes/create",
+                  meta: {
+                    label: "Classes",
+                    icon: <BookOpen />
+                  }
+
                 }
               ]}
             >
@@ -66,6 +78,10 @@ function App() {
                   <Route path="subjects">
                     <Route index element={<SubjectsList />} /> 
                     <Route path="create" element={<SubjectsCreate />} />
+                  </Route>
+                  <Route path="classes">
+                    <Route index element={<ClassesList />} /> 
+                    <Route path="create" element={<ClassesCreate />} />
                   </Route>
                 </Route>
               </Routes>
